@@ -1,29 +1,20 @@
-package main
+package appDB
 
 import (
 	"fmt"
 	"log"
 	"os"
 
-	todo "github.com/B-danik/GameShop_Go"
 	"github.com/B-danik/GameShop_Go/internal/database"
-	"github.com/B-danik/GameShop_Go/internal/user"
 	"github.com/joho/godotenv"
-	"github.com/julienschmidt/httprouter"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 )
 
-func main() {
-	fmt.Println("Run Test Application: GameShop_Backend...")
+type appDB struct {
+}
 
-	log.Println("Create router")
-	router := httprouter.New()
-
-	log.Println("Create handler")
-	handler := user.NewHandler()
-	handler.Register(router)
-
+func Connect() error {
 	if err := initConfig(); err != nil {
 		log.Fatalf("Error initConfigYaml... %s", err.Error())
 	}
@@ -45,11 +36,7 @@ func main() {
 	}
 
 	log.Printf("DB name: %s", db.DriverName())
-	log.Println("Start app")
-	srv := new(todo.Server)
-	if err := srv.Run(viper.GetString("Port"), router); err != nil {
-		log.Fatalf("Error conect")
-	}
+	return nil
 }
 
 func initConfig() error {
