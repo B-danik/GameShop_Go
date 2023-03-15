@@ -3,17 +3,39 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	todo "github.com/B-danik/GameShop_Go"
+	"github.com/B-danik/GameShop_Go/internal/database"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 )
 
 func main() {
 	fmt.Println("Hello world")
 	if err := initConfig(); err != nil {
-		log.Fatalf("Error initConfig %s", err.Error())
+		log.Fatalf("Error initConfigYaml... %s", err.Error())
 	}
-	fmt.Println(viper.GetString("Port"))
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("Error initConfigEnv... %s", err.Error())
+	}
+
+	fmt.Println(viper.GetString("db.port"))
+	db, err := database.NewPostgresDB(database.Config{
+		Host:     viper.GetString("db.host"),
+		Port:     viper.GetString("db.port"),
+		Username: viper.GetString("db.username"),
+		Password: os.Getenv("db_password"),
+		DBName:   viper.GetString("db.dbname"),
+		SSLMode:  viper.GetString("db.sslmode"),
+	})
+	if err != nil {
+		log.Fatalf("Error connect db... %s", err.Error())
+	}
+
+	log.Printf(db.DriverName())
+
 	srv := new(todo.Server)
 	if err := srv.Run(viper.GetString("Port")); err != nil {
 		log.Fatalf("Error conect")
@@ -21,7 +43,7 @@ func main() {
 }
 
 func initConfig() error {
-	viper.AddConfigPath("/config")
+	viper.AddConfigPath("config")
 	viper.SetConfigName("config")
 	return viper.ReadInConfig()
 }
